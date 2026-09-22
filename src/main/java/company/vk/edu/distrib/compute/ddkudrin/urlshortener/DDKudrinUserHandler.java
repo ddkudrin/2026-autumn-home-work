@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpHandler;
 import company.vk.edu.distrib.compute.Dao;
 
 public class DDKudrinUserHandler implements HttpHandler {
+    private static final int CREDENTIALS_PARTS_COUNT = 2;
 
     private final Dao<String> dao;
 
@@ -30,8 +31,8 @@ public class DDKudrinUserHandler implements HttpHandler {
             }
 
             String credentials = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            String[] parts = credentials.split(":", 2);
-            if (parts.length != 2) {
+            String[] parts = credentials.split(":", CREDENTIALS_PARTS_COUNT);
+            if (parts.length != CREDENTIALS_PARTS_COUNT) {
                 exchange.sendResponseHeaders(400, -1);
                 return;
             }

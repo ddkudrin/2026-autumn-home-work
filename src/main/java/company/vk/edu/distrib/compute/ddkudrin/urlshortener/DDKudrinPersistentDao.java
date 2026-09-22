@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import company.vk.edu.distrib.compute.Dao;
 
 public final class DDKudrinPersistentDao implements Dao<String> {
+    private static final int RECORD_PARTS_COUNT = 3;
 
     private enum Operation {
         INSERT,
@@ -81,14 +82,13 @@ public final class DDKudrinPersistentDao implements Dao<String> {
 
     private void load() throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 if (line.isBlank()) {
                     continue;
                 }
 
-                String[] parts = line.split(" ", 3);
-                if (parts.length < 3) {
+                String[] parts = line.split(" ", RECORD_PARTS_COUNT);
+                if (parts.length < RECORD_PARTS_COUNT) {
                     continue;
                 }
 

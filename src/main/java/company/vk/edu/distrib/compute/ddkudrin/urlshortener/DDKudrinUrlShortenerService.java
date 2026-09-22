@@ -12,14 +12,12 @@ import company.vk.edu.distrib.compute.urlshortener.UrlShortenerService;
 public class DDKudrinUrlShortenerService implements UrlShortenerService {
 
     private final HttpServer server;
-    private final Dao<String> linkDao;
-    private final Dao<String> userDao;
 
     public DDKudrinUrlShortenerService(int port) throws IOException {
-        this.linkDao = new DDKudrinPersistentDao(
+        Dao<String> linkDao = new DDKudrinPersistentDao(
                 Path.of(System.getProperty("user.home"), "data", "links.wal")
         );
-        this.userDao = new DDKudrinPersistentDao(
+        Dao<String> userDao = new DDKudrinPersistentDao(
                 Path.of(System.getProperty("user.home"), "data", "users.wal")
         );
         this.server = HttpServer.create(new InetSocketAddress(port), 0);

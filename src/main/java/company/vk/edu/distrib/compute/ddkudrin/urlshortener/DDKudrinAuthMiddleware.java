@@ -24,7 +24,7 @@ public class DDKudrinAuthMiddleware implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         String[] credentials = parseBasicAuth(exchange.getRequestHeaders().getFirst("Authorization"));
-        if (credentials == null) {
+        if (credentials.length == 0) {
             unauthorized(exchange);
             return;
         }
@@ -44,7 +44,7 @@ public class DDKudrinAuthMiddleware implements HttpHandler {
 
     private static String[] parseBasicAuth(String header) {
         if (header == null || !header.regionMatches(true, 0, "Basic ", 0, 6)) {
-            return null;
+            return new String[0];
         }
 
         try {
@@ -52,11 +52,11 @@ public class DDKudrinAuthMiddleware implements HttpHandler {
             String s = new String(decoded, StandardCharsets.UTF_8);
             int idx = s.indexOf(':');
             if (idx < 0) {
-                return null;
+                return new String[0];
             }
             return new String[]{ s.substring(0, idx), s.substring(idx + 1) };
         } catch (IllegalArgumentException e) {
-            return null;
+            return new String[0];
         }
     }
 
