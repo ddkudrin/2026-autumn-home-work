@@ -5,6 +5,8 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -15,6 +17,7 @@ public class DDKudrinUrlShortenerService implements UrlShortenerService {
 
     private final HttpServer server;
     private final Dao<String> userDao;
+    private final Lock lock = new ReentrantLock();
     private Dao<String> linkDao;
     private boolean configurationLocked;
 
@@ -32,17 +35,21 @@ public class DDKudrinUrlShortenerService implements UrlShortenerService {
 
     @Override
     public void setLinksDao(Dao<String> dao) {
-        synchronized (this) {
+        lock.lock();
+        try {
             if (configurationLocked) {
                 throw new IllegalStateException("Cannot replace links Dao after start or stop");
             }
             this.linkDao = Objects.requireNonNull(dao);
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     public void start() {
-        synchronized (this) {
+        lock.lock();
+        try {
             if (configurationLocked) {
                 throw new IllegalStateException("Service already started or stopped");
             }
@@ -53,12 +60,15 @@ public class DDKudrinUrlShortenerService implements UrlShortenerService {
             );
             server.createContext("/", new DDKudrinRedirectHandler(linkDao));
             server.start();
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override 
     public void stop() {
-        synchronized (this) {
+        lock.lock();
+        try {
             configurationLocked = true;
             Dao<String> links = linkDao;
             try (links; userDao) {
@@ -66,6 +76,8 @@ public class DDKudrinUrlShortenerService implements UrlShortenerService {
             } catch (IOException e) {
                 throw new UncheckedIOException("Cannot close service storage", e);
             }
+        } finally {
+            lock.unlock();
         }
     }
 }

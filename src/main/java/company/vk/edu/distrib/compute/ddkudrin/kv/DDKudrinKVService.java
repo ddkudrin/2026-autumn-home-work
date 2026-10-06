@@ -14,6 +14,7 @@ import company.vk.edu.distrib.compute.ddkudrin.urlshortener.DDKudrinStatusHandle
 import company.vk.edu.distrib.compute.kv.KVService;
 
 public class DDKudrinKVService implements KVService {
+    private static final int MIN_THREAD_COUNT = 1;
     private final HttpServer server;
     private final Dao<byte[]> dao;
     private final ExecutorService executor;
@@ -39,7 +40,7 @@ public class DDKudrinKVService implements KVService {
         }
         try {
             int threads = Integer.parseInt(value);
-            if (threads < 1) {
+            if (threads < MIN_THREAD_COUNT) {
                 throw new IllegalArgumentException("KV_THREADS must be a positive integer");
             }
             return threads;
