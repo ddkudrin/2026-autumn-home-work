@@ -13,6 +13,8 @@ import java.util.NoSuchElementException;
 import company.vk.edu.distrib.compute.Dao;
 
 public final class DDKudrinRemoteDao implements Dao<String> {
+    private static final int HTTP_NOT_FOUND = 404;
+
     private static final Duration TIMEOUT = Duration.ofSeconds(2);
     private final HttpClient client;
     private final String entityUrl;
@@ -28,7 +30,7 @@ public final class DDKudrinRemoteDao implements Dao<String> {
     @Override
     public String get(String key) throws IOException {
         HttpResponse<byte[]> response = send(request(key).GET().build());
-        if (response.statusCode() == 404) {
+        if (response.statusCode() == HTTP_NOT_FOUND) {
             throw new NoSuchElementException("Unknown key: " + key);
         }
         checkStatus(response, 200);

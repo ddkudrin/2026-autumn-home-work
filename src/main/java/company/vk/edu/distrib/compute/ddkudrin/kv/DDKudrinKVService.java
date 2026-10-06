@@ -24,19 +24,12 @@ public class DDKudrinKVService implements KVService {
     }
 
     public DDKudrinKVService(int port, Path file, int threads) throws IOException {
-        if (threads < 1) {
-            throw new IllegalArgumentException("Thread count must be positive");
-        }
         this.dao = new DDKudrinKVDao(file);
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         this.server.createContext("/v0/status", new DDKudrinStatusHandler());
         this.server.createContext("/", new DDKudrinEntityHandler(dao));
-        if (threads > 1) {
-            this.executor = Executors.newFixedThreadPool(threads);
-            this.server.setExecutor(executor);
-        } else {
-            this.executor = null;
-        }
+        this.executor = Executors.newFixedThreadPool(threads);
+        this.server.setExecutor(executor);
     }
 
     private static int getThreads() {

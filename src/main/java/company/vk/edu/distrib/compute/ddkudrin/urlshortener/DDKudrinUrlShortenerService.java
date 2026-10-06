@@ -31,35 +31,41 @@ public class DDKudrinUrlShortenerService implements UrlShortenerService {
     }
 
     @Override
-    public synchronized void setLinksDao(Dao<String> dao) {
-        if (configurationLocked) {
-            throw new IllegalStateException("Cannot replace links Dao after start or stop");
+    public void setLinksDao(Dao<String> dao) {
+        synchronized (this) {
+            if (configurationLocked) {
+                throw new IllegalStateException("Cannot replace links Dao after start or stop");
+            }
+            this.linkDao = Objects.requireNonNull(dao);
         }
-        this.linkDao = Objects.requireNonNull(dao);
     }
 
     @Override
-    public synchronized void start() {
-        if (configurationLocked) {
-            throw new IllegalStateException("Service already started or stopped");
+    public void start() {
+        synchronized (this) {
+            if (configurationLocked) {
+                throw new IllegalStateException("Service already started or stopped");
+            }
+            configurationLocked = true;
+            server.createContext(
+                "/v0/links",
+                new DDKudrinAuthMiddleware(new DDKudrinLinksHandler(linkDao), userDao)
+            );
+            server.createContext("/", new DDKudrinRedirectHandler(linkDao));
+            server.start();
         }
-        configurationLocked = true;
-        server.createContext(
-            "/v0/links",
-            new DDKudrinAuthMiddleware(new DDKudrinLinksHandler(linkDao), userDao)
-        );
-        server.createContext("/", new DDKudrinRedirectHandler(linkDao));
-        server.start();
     }
 
     @Override 
-    public synchronized void stop() {
-        configurationLocked = true;
-        Dao<String> links = linkDao;
-        try (links; userDao) {
-            server.stop(1);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Cannot close service storage", e);
+    public void stop() {
+        synchronized (this) {
+            configurationLocked = true;
+            Dao<String> links = linkDao;
+            try (links; userDao) {
+                server.stop(1);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Cannot close service storage", e);
+            }
         }
     }
 }
