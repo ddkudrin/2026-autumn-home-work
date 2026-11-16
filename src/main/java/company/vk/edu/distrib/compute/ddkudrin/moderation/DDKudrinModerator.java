@@ -22,13 +22,14 @@ final class DDKudrinModerator {
     private final List<String> bannedWords;
 
     DDKudrinModerator() throws IOException {
-        InputStream input = DDKudrinModerator.class.getResourceAsStream("/moderation/banned_words.txt");
-        if (input == null) {
-            throw new IOException("Moderation dictionary is missing");
-        }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            bannedWords = reader.lines().map(String::trim).filter(word -> !word.isEmpty())
-                .map(word -> word.toLowerCase(Locale.ROOT)).toList();
+        try (InputStream input = DDKudrinModerator.class.getResourceAsStream("/moderation/banned_words.txt")) {
+            if (input == null) {
+                throw new IOException("Moderation dictionary is missing");
+            }
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                bannedWords = reader.lines().map(String::trim).filter(word -> !word.isEmpty())
+                    .map(word -> word.toLowerCase(Locale.ROOT)).toList();
+            }
         }
     }
 

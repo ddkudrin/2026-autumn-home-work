@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 public final class DDKudrinKafkaClient {
     private static final Logger LOG = LoggerFactory.getLogger(DDKudrinKafkaClient.class);
+    private static final int RESULT_FIELDS = 5;
+    private static final String FAILED_RESULT = Boolean.FALSE.toString();
     private final DDKudrinLinksHandler handler;
     private final KafkaProducer<String, String> producer;
     private final KafkaConsumer<String, String> consumer;
@@ -104,13 +106,13 @@ public final class DDKudrinKafkaClient {
 
     private boolean applyResult(ConsumerRecord<String, String> record) {
         String[] parts = record.value().split("\\.", -1);
-        if (parts.length != 5) {
+        if (parts.length != RESULT_FIELDS) {
             LOG.warn("Invalid moderation result");
             return true;
         }
         try {
             String id = DDKudrinEvents.decode(parts[0]);
-            if (id.equals(record.key()) && "false".equals(parts[1])) {
+            if (id.equals(record.key()) && FAILED_RESULT.equals(parts[1])) {
                 handler.deleteIfUnchanged(id, DDKudrinEvents.decode(parts[2]));
             }
             return true;

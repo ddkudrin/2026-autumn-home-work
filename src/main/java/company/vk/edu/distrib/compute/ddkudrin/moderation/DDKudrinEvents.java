@@ -8,6 +8,8 @@ import company.vk.edu.distrib.compute.moderation.LinkCreatedEvent;
 import company.vk.edu.distrib.compute.moderation.ModerationResultEvent;
 
 public final class DDKudrinEvents {
+    private static final int CREATED_EVENT_FIELDS = 3;
+
     private DDKudrinEvents() {
     }
 
@@ -25,7 +27,7 @@ public final class DDKudrinEvents {
 
     public static LinkCreatedEvent parseCreated(String value) {
         String[] parts = value.split("\\.", -1);
-        if (parts.length != 3) {
+        if (parts.length != CREATED_EVENT_FIELDS) {
             throw new IllegalArgumentException("Invalid link event");
         }
         String id = decode(parts[0]);
